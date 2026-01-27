@@ -1,11 +1,11 @@
 .card {
   background: #606060;
   border-radius: 12px;
-  padding: 1.5rem;
+  padding: 1rem 1.25rem;
 }
 
 .title {
-  margin: 0 0 0.5rem;
+  margin: 0 0 0.25rem;
   font-size: 0.75rem;
   font-weight: 700;
   color: #E8E8E8;
@@ -21,7 +21,45 @@
 }
 
 .subtitle {
-  margin: 0.5rem 0 0;
+  margin: 0.25rem 0 0;
   font-size: 0.85rem;
   color: #8A8A8A;
+}
+
+.content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.main {
+  flex: 1;
+}
+
+.sideStats {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  border-left: 1px solid #555;
+  padding-left: 1rem;
+  margin-left: 1rem;
+}
+
+.sideStat {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+}
+
+.sideLabel {
+  font-size: 0.65rem;
+  color: #888;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+.sideValue {
+  font-size: 0.85rem;
+  color: #E8E8E8;
+  font-weight: 500;
 }

@@ -93,20 +93,33 @@ export function useWanikani(apiToken) {
         }))
         .sort((a, b) => a.level - b.level);
 
-      // Calculate average days per level
+      // Calculate average days per level + fastest/slowest
       let avgDaysPerLevel = null;
+      let fastestLevel = null;
+      let slowestLevel = null;
       if (levelTimeline.length >= 2) {
         const levelDurations = [];
+        let fastest = { level: 0, days: Infinity };
+        let slowest = { level: 0, days: 0 };
+
         for (let i = 1; i < levelTimeline.length; i++) {
           const prev = levelTimeline[i - 1];
           const curr = levelTimeline[i];
           const daysSpent = (curr.startedAt - prev.startedAt) / (1000 * 60 * 60 * 24);
           if (daysSpent > 0 && daysSpent < 365) {
             levelDurations.push(daysSpent);
+            if (daysSpent < fastest.days) {
+              fastest = { level: prev.level, days: daysSpent };
+            }
+            if (daysSpent > slowest.days) {
+              slowest = { level: prev.level, days: daysSpent };
+            }
           }
         }
         if (levelDurations.length > 0) {
           avgDaysPerLevel = levelDurations.reduce((a, b) => a + b, 0) / levelDurations.length;
+          fastestLevel = fastest;
+          slowestLevel = slowest;
         }
       }
 
@@ -169,6 +182,8 @@ export function useWanikani(apiToken) {
         subjectTypeCounts,
         accuracy,
         avgDaysPerLevel,
+        fastestLevel,
+        slowestLevel,
         currentLevelProgress: {
           passed: currentLevelPassed,
           started: currentLevelStarted,

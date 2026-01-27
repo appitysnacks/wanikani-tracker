@@ -8,7 +8,17 @@ import {
   Tooltip,
   ResponsiveContainer,
   ReferenceLine,
+  ReferenceArea,
 } from 'recharts';
+
+// JLPT level ranges mapped to WaniKani levels
+const JLPT_LEVELS = [
+  { name: 'N5', label: 'Beginner', y1: 1, y2: 10, color: '#FF0080' },
+  { name: 'N4', label: 'Elementary', y1: 10, y2: 20, color: '#9B59B6' },
+  { name: 'N3', label: 'Intermediate', y1: 20, y2: 30, color: '#5AC8FA' },
+  { name: 'N2', label: 'Pre-Advanced', y1: 30, y2: 50, color: '#00AAFF' },
+  { name: 'N1', label: 'Advanced', y1: 50, y2: 60, color: '#00D68F' },
+];
 import styles from './ProgressChart.module.css';
 
 function analyzeProgress(levelTimeline, currentLevel) {
@@ -232,30 +242,49 @@ export function ProgressChart({ levelTimeline, currentLevel }) {
 
       <div className={styles.chartWrapper}>
         <ResponsiveContainer width="100%" height={350}>
-          <ComposedChart data={combinedData} margin={{ top: 20, right: 20, left: 0, bottom: 20 }}>
+          <ComposedChart data={combinedData} margin={{ top: 20, right: 35, left: 0, bottom: 20 }}>
             <XAxis
               dataKey="date"
               type="number"
               domain={['dataMin', 'dataMax']}
               ticks={generateTicks()}
               tickFormatter={formatMonth}
-              stroke="#666"
+              stroke="#999"
               fontSize={11}
               tickLine={false}
-              axisLine={{ stroke: '#555' }}
-              tick={{ fill: '#888' }}
+              axisLine={{ stroke: '#AAA' }}
+              tick={{ fill: '#555' }}
             />
             <YAxis
               domain={[1, 60]}
               ticks={levelTicks}
-              stroke="#666"
+              stroke="#999"
               fontSize={11}
               width={35}
               tickLine={false}
-              axisLine={{ stroke: '#555' }}
-              tick={{ fill: '#888' }}
+              axisLine={{ stroke: '#AAA' }}
+              tick={{ fill: '#555' }}
             />
             <Tooltip content={<CustomTooltip />} />
+
+            {/* JLPT level bands */}
+            {JLPT_LEVELS.map((jlpt) => (
+              <ReferenceArea
+                key={jlpt.name}
+                y1={jlpt.y1}
+                y2={jlpt.y2}
+                fill={jlpt.color}
+                fillOpacity={0.35}
+                stroke="none"
+                label={{
+                  value: jlpt.name,
+                  position: 'insideRight',
+                  fill: '#333',
+                  fontSize: 11,
+                  fontWeight: 700,
+                }}
+              />
+            ))}
 
             {/* Level 60 goal line */}
             <ReferenceLine y={60} stroke="#444" strokeWidth={1} />
@@ -307,23 +336,20 @@ export function ProgressChart({ levelTimeline, currentLevel }) {
         </ResponsiveContainer>
       </div>
 
-      {/* Key metrics */}
+      {/* JLPT legend */}
+      <div className={styles.jlptLegend}>
+        {JLPT_LEVELS.map((jlpt) => (
+          <span key={jlpt.name} className={styles.jlptItem}>
+            <span className={styles.jlptDot} style={{ background: jlpt.color }} />
+            <span className={styles.jlptName}>{jlpt.name}</span>
+            <span className={styles.jlptLabel}>{jlpt.label}</span>
+          </span>
+        ))}
+      </div>
+
+      {/* Est. completion */}
       {analysis && (
         <div className={styles.metrics}>
-          <div className={styles.metric}>
-            <span className={styles.metricLabel}>Fastest</span>
-            <span className={styles.metricValue}>
-              Lvl {analysis.fastestLevel.level}
-              <span className={styles.metricDetail}>{analysis.fastestLevel.days.toFixed(1)}d</span>
-            </span>
-          </div>
-          <div className={styles.metric}>
-            <span className={styles.metricLabel}>Slowest</span>
-            <span className={styles.metricValue}>
-              Lvl {analysis.slowestLevel.level}
-              <span className={styles.metricDetail}>{analysis.slowestLevel.days.toFixed(1)}d</span>
-            </span>
-          </div>
           <div className={styles.metric}>
             <span className={styles.metricLabel}>Est. Completion</span>
             <span className={styles.metricValue}>

@@ -1,8 +1,7 @@
 import { useWanikani } from '../hooks/useWanikani';
 import { StatsCard } from './StatsCard';
-import { LevelProgress } from './LevelProgress';
 import { ProgressChart } from './ProgressChart';
-import { RecentMistakes } from './RecentMistakes';
+import { MotivationalQuote } from './MotivationalQuote';
 import styles from './Dashboard.module.css';
 
 export function Dashboard({ apiToken, onLogout }) {
@@ -31,7 +30,7 @@ export function Dashboard({ apiToken, onLogout }) {
 
   if (!data) return null;
 
-  const { user, accuracy, avgDaysPerLevel, currentLevelProgress, levelTimeline, recentMistakes } = data;
+  const { user, accuracy, avgDaysPerLevel, fastestLevel, slowestLevel, levelTimeline } = data;
 
   return (
     <div className={styles.container}>
@@ -62,6 +61,10 @@ export function Dashboard({ apiToken, onLogout }) {
           value={avgDaysPerLevel ? `${avgDaysPerLevel.toFixed(1)}` : '—'}
           subtitle="days"
           color="#00AAFF"
+          sideStats={fastestLevel && slowestLevel ? [
+            { label: 'Fastest', value: `Lvl ${fastestLevel.level} · ${fastestLevel.days.toFixed(1)}d` },
+            { label: 'Slowest', value: `Lvl ${slowestLevel.level} · ${slowestLevel.days.toFixed(1)}d` },
+          ] : null}
         />
         <StatsCard
           title="Accuracy"
@@ -73,14 +76,7 @@ export function Dashboard({ apiToken, onLogout }) {
 
       <ProgressChart levelTimeline={levelTimeline} currentLevel={user.level} />
 
-      <LevelProgress
-        level={user.level}
-        passed={currentLevelProgress.passed}
-        started={currentLevelProgress.started}
-        total={currentLevelProgress.total}
-      />
-
-      <RecentMistakes mistakes={recentMistakes} />
+      <MotivationalQuote />
 
       <footer className={styles.footer}>
         <p>

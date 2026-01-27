@@ -1,0 +1,25 @@
+.container {
+  background: #606060;
+  border-radius: 12px;
+  padding: 2rem 1.5rem;
+  margin-top: 1.5rem;
+  text-align: center;
+}
+
+.quote {
+  margin: 0;
+}
+
+.text {
+  margin: 0 0 0.75rem;
+  font-size: 1.1rem;
+  font-style: italic;
+  color: #E8E8E8;
+  line-height: 1.6;
+}
+
+.author {
+  font-size: 0.85rem;
+  color: #9A9A9A;
+  font-style: normal;
+}
