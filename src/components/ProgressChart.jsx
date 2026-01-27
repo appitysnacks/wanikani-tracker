@@ -347,20 +347,6 @@ export function ProgressChart({ levelTimeline, currentLevel }) {
         ))}
       </div>
 
-      {/* Est. completion */}
-      {analysis && (
-        <div className={styles.metrics}>
-          <div className={styles.metric}>
-            <span className={styles.metricLabel}>Est. Completion</span>
-            <span className={styles.metricValue}>
-              {analysis.estimatedCompletionDate.toLocaleDateString('en-US', {
-                month: 'short',
-                year: 'numeric',
-              })}
-            </span>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

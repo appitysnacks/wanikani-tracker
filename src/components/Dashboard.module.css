@@ -130,9 +130,10 @@
 
 .statsGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  grid-template-columns: 1fr 1.5fr 1fr 1fr;
   gap: 1rem;
   margin-bottom: 1rem;
+  align-items: stretch;
 }
 
 .chartsGrid {
@@ -231,6 +232,7 @@
 
   .statsGrid {
     grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
   }
 
   .chartsGrid {

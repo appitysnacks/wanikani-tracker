@@ -30,7 +30,7 @@ export function Dashboard({ apiToken, onLogout }) {
 
   if (!data) return null;
 
-  const { user, accuracy, avgDaysPerLevel, fastestLevel, slowestLevel, levelTimeline } = data;
+  const { user, accuracy, avgDaysPerLevel, fastestLevel, slowestLevel, estimatedCompletion, levelTimeline } = data;
 
   return (
     <div className={styles.container}>
@@ -71,6 +71,12 @@ export function Dashboard({ apiToken, onLogout }) {
           value={`${accuracy.toFixed(1)}%`}
           subtitle="overall"
           color={accuracy >= 90 ? '#00D68F' : accuracy >= 80 ? '#FF9500' : '#FF0080'}
+        />
+        <StatsCard
+          title="Est. Completion"
+          value={estimatedCompletion ? estimatedCompletion.toLocaleDateString('en-US', { month: 'short', year: 'numeric' }) : '—'}
+          subtitle={estimatedCompletion ? `${Math.ceil((estimatedCompletion - new Date()) / (1000 * 60 * 60 * 24))} days` : ''}
+          color="#00D68F"
         />
       </div>
 

@@ -123,6 +123,17 @@ export function useWanikani(apiToken) {
         }
       }
 
+      // Calculate estimated completion date
+      let estimatedCompletion = null;
+      if (avgDaysPerLevel && levelTimeline.length > 0) {
+        const levelsRemaining = 60 - user.level;
+        const lastLevel = levelTimeline[levelTimeline.length - 1];
+        const projectionStart = lastLevel.startedAt.getTime();
+        estimatedCompletion = new Date(
+          projectionStart + levelsRemaining * avgDaysPerLevel * 24 * 60 * 60 * 1000
+        );
+      }
+
       // Calculate current level progress
       // For level progress, we care about kanji specifically (90% kanji at Guru = level up)
       // But for a general progress bar, show all items passed vs total
@@ -184,6 +195,7 @@ export function useWanikani(apiToken) {
         avgDaysPerLevel,
         fastestLevel,
         slowestLevel,
+        estimatedCompletion,
         currentLevelProgress: {
           passed: currentLevelPassed,
           started: currentLevelStarted,
