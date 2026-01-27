@@ -37,7 +37,7 @@ export function Dashboard({ apiToken, onLogout }) {
       <header className={styles.header}>
         <div className={styles.branding}>
           <img src="/wanikani-logo.png" alt="WaniKani" className={styles.logo} />
-          <h1 className={styles.title}>Tara's Progress Dashboard</h1>
+          <h1 className={styles.title}>My Progress Dashboard</h1>
         </div>
         <div className={styles.headerActions}>
           <button onClick={refresh} className={styles.refreshButton} disabled={loading}>
