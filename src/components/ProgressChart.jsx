@@ -165,6 +165,9 @@ export function ProgressChart({ levelTimeline, currentLevel }) {
   // Generate Y-axis ticks for levels 1-60 (every 5 levels for readability)
   const levelTicks = [1, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60];
 
+  // Today's date for vertical reference line
+  const today = new Date().getTime();
+
   return (
     <div className={styles.container}>
       <div className={styles.header}>
@@ -184,25 +187,27 @@ export function ProgressChart({ levelTimeline, currentLevel }) {
       <div className={styles.chartWrapper}>
         <ResponsiveContainer width="100%" height={400}>
           <LineChart data={combinedData} margin={{ top: 10, right: 30, left: 0, bottom: 5 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#eee" />
+            <CartesianGrid strokeDasharray="3 3" stroke="#5A5A5A" />
             <XAxis
               dataKey="date"
               type="number"
               domain={['dataMin', 'dataMax']}
               ticks={generateQuarterlyTicks()}
               tickFormatter={formatQuarter}
-              stroke="#888"
+              stroke="#8A8A8A"
               fontSize={11}
               angle={-45}
               textAnchor="end"
               height={50}
+              tick={{ fill: '#9A9A9A' }}
             />
             <YAxis
               domain={[1, 60]}
               ticks={levelTicks}
-              stroke="#888"
+              stroke="#8A8A8A"
               fontSize={11}
               width={40}
+              tick={{ fill: '#9A9A9A' }}
             />
             <Tooltip
               labelFormatter={formatDate}
@@ -214,28 +219,32 @@ export function ProgressChart({ levelTimeline, currentLevel }) {
               contentStyle={{
                 borderRadius: '8px',
                 border: 'none',
-                boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+                boxShadow: '0 4px 12px rgba(0,0,0,0.4)',
+                background: '#3D3D3D',
+                color: '#E8E8E8',
               }}
+              labelStyle={{ color: '#9A9A9A' }}
             />
-            <ReferenceLine y={60} stroke="#00aa55" strokeDasharray="5 5" label={{ value: 'Level 60', position: 'right', fill: '#00aa55', fontSize: 12 }} />
+            <ReferenceLine y={60} stroke="#00D68F" strokeDasharray="5 5" label={{ value: 'Lvl 60', position: 'insideRight', fill: '#00D68F', fontSize: 11 }} />
+            <ReferenceLine x={today} stroke="#FF9500" strokeWidth={1} label={{ value: 'Today', position: 'insideTopRight', fill: '#FF9500', fontSize: 10, dy: 5 }} />
             <Line
               type="stepAfter"
               dataKey="actualLevel"
-              stroke="#aa00ff"
+              stroke="#BB66FF"
               strokeWidth={2}
-              dot={{ fill: '#aa00ff', strokeWidth: 0, r: 4 }}
-              activeDot={{ r: 6, fill: '#aa00ff' }}
+              dot={{ fill: '#BB66FF', strokeWidth: 0, r: 4 }}
+              activeDot={{ r: 6, fill: '#BB66FF' }}
               connectNulls={false}
             />
             {showProjection && projection && (
               <Line
                 type="linear"
                 dataKey="projectedLevel"
-                stroke="#00aaff"
+                stroke="#00AAFF"
                 strokeWidth={2}
                 strokeDasharray="5 5"
                 dot={false}
-                activeDot={{ r: 6, fill: '#00aaff' }}
+                activeDot={{ r: 6, fill: '#00AAFF' }}
                 connectNulls={false}
               />
             )}

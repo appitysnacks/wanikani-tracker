@@ -1,15 +1,15 @@
 .container {
-  background: white;
+  background: #4A4A4A;
   border-radius: 12px;
   padding: 1.5rem;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
 .title {
   margin: 0 0 1rem;
   font-size: 1rem;
   font-weight: 600;
-  color: #1a1a2e;
+  color: #E8E8E8;
 }
 
 .chartWrapper {
@@ -17,7 +17,7 @@
 }
 
 .empty {
-  color: #888;
+  color: #8A8A8A;
   text-align: center;
   padding: 2rem;
 }
@@ -43,11 +43,11 @@
 }
 
 .legendLabel {
-  color: #333;
+  color: #E8E8E8;
   flex: 1;
 }
 
 .legendValue {
-  color: #666;
+  color: #9A9A9A;
   font-weight: 500;
 }

@@ -1,7 +1,6 @@
 import { useWanikani } from '../hooks/useWanikani';
 import { StatsCard } from './StatsCard';
 import { LevelProgress } from './LevelProgress';
-import { SrsBreakdown } from './SrsBreakdown';
 import { ProgressChart } from './ProgressChart';
 import styles from './Dashboard.module.css';
 
@@ -31,7 +30,7 @@ export function Dashboard({ apiToken, onLogout }) {
 
   if (!data) return null;
 
-  const { user, categoryTotals, accuracy, avgDaysPerLevel, currentLevelProgress, levelTimeline, reviewsDue, lessonsDue, totalItems, subjectTypeCounts } = data;
+  const { user, accuracy, avgDaysPerLevel, currentLevelProgress, levelTimeline } = data;
 
   return (
     <div className={styles.container}>
@@ -55,19 +54,19 @@ export function Dashboard({ apiToken, onLogout }) {
           title="Current Level"
           value={user.level}
           subtitle="of 60"
-          color="#aa00ff"
+          color="#9B59B6"
         />
         <StatsCard
           title="Avg Time per Level"
           value={avgDaysPerLevel ? `${avgDaysPerLevel.toFixed(1)}` : '—'}
           subtitle="days"
-          color="#00aaff"
+          color="#00AAFF"
         />
         <StatsCard
           title="Accuracy"
           value={`${accuracy.toFixed(1)}%`}
           subtitle="overall"
-          color={accuracy >= 90 ? '#00aa55' : accuracy >= 80 ? '#ff9900' : '#ff4444'}
+          color={accuracy >= 90 ? '#00D68F' : accuracy >= 80 ? '#FF9500' : '#FF0080'}
         />
       </div>
 
@@ -76,62 +75,10 @@ export function Dashboard({ apiToken, onLogout }) {
       <LevelProgress
         level={user.level}
         passed={currentLevelProgress.passed}
+        started={currentLevelProgress.started}
         total={currentLevelProgress.total}
       />
 
-      <div className={styles.chartsGrid}>
-        <SrsBreakdown categoryTotals={categoryTotals} />
-        <div className={styles.itemDistribution}>
-          <h3 className={styles.sectionTitle}>Item Distribution</h3>
-          <div className={styles.distributionBars}>
-            <div className={styles.distributionItem}>
-              <div className={styles.distributionHeader}>
-                <span>Radicals</span>
-                <span>{subjectTypeCounts.radical || 0}</span>
-              </div>
-              <div className={styles.distributionBar}>
-                <div
-                  className={styles.distributionFill}
-                  style={{
-                    width: `${((subjectTypeCounts.radical || 0) / totalItems) * 100}%`,
-                    background: '#00aaff',
-                  }}
-                />
-              </div>
-            </div>
-            <div className={styles.distributionItem}>
-              <div className={styles.distributionHeader}>
-                <span>Kanji</span>
-                <span>{subjectTypeCounts.kanji || 0}</span>
-              </div>
-              <div className={styles.distributionBar}>
-                <div
-                  className={styles.distributionFill}
-                  style={{
-                    width: `${((subjectTypeCounts.kanji || 0) / totalItems) * 100}%`,
-                    background: '#ff00aa',
-                  }}
-                />
-              </div>
-            </div>
-            <div className={styles.distributionItem}>
-              <div className={styles.distributionHeader}>
-                <span>Vocabulary</span>
-                <span>{subjectTypeCounts.vocabulary || 0}</span>
-              </div>
-              <div className={styles.distributionBar}>
-                <div
-                  className={styles.distributionFill}
-                  style={{
-                    width: `${((subjectTypeCounts.vocabulary || 0) / totalItems) * 100}%`,
-                    background: '#aa00ff',
-                  }}
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
 
       <footer className={styles.footer}>
         <p>

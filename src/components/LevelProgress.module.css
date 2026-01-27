@@ -1,8 +1,8 @@
 .container {
-  background: white;
+  background: #4A4A4A;
   border-radius: 12px;
   padding: 1.5rem;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
 .header {
@@ -14,24 +14,38 @@
 
 .label {
   font-weight: 600;
-  color: #1a1a2e;
+  color: #E8E8E8;
 }
 
 .count {
   font-size: 0.85rem;
-  color: #666;
+  color: #9A9A9A;
 }
 
 .barContainer {
   height: 12px;
-  background: #e8e8f0;
+  background: #3D3D3D;
   border-radius: 6px;
   overflow: hidden;
+  position: relative;
 }
 
-.bar {
+.barStarted {
+  position: absolute;
+  top: 0;
+  left: 0;
   height: 100%;
-  background: linear-gradient(90deg, #aa00ff 0%, #00aaff 100%);
+  background: #5A5A5A;
+  border-radius: 6px;
+  transition: width 0.5s ease-out;
+}
+
+.barPassed {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  background: linear-gradient(90deg, #9B59B6 0%, #00AAFF 100%);
   border-radius: 6px;
   transition: width 0.5s ease-out;
 }
@@ -39,6 +53,6 @@
 .percentage {
   margin: 0.5rem 0 0;
   font-size: 0.85rem;
-  color: #888;
+  color: #8A8A8A;
   text-align: right;
 }

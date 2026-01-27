@@ -2,23 +2,23 @@ import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recha
 import styles from './SrsBreakdown.module.css';
 
 const SRS_COLORS = {
-  'Apprentice 1': '#ff00aa',
-  'Apprentice 2': '#ff00aa',
-  'Apprentice 3': '#ff00aa',
-  'Apprentice 4': '#ff00aa',
-  'Guru 1': '#aa00ff',
-  'Guru 2': '#aa00ff',
-  'Master': '#0088ff',
-  'Enlightened': '#00aaff',
-  'Burned': '#444',
+  'Apprentice 1': '#FF0080',
+  'Apprentice 2': '#FF0080',
+  'Apprentice 3': '#FF0080',
+  'Apprentice 4': '#FF0080',
+  'Guru 1': '#9B59B6',
+  'Guru 2': '#9B59B6',
+  'Master': '#5AC8FA',
+  'Enlightened': '#00AAFF',
+  'Burned': '#7A7A7A',
 };
 
 const CATEGORY_COLORS = {
-  apprentice: '#ff00aa',
-  guru: '#aa00ff',
-  master: '#0088ff',
-  enlightened: '#00aaff',
-  burned: '#444',
+  apprentice: '#FF0080',
+  guru: '#9B59B6',
+  master: '#5AC8FA',
+  enlightened: '#00AAFF',
+  burned: '#7A7A7A',
 };
 
 export function SrsBreakdown({ categoryTotals }) {
@@ -53,9 +53,24 @@ export function SrsBreakdown({ categoryTotals }) {
               outerRadius={80}
               paddingAngle={2}
               dataKey="value"
-              label={({ name, percent }) =>
-                `${name} ${(percent * 100).toFixed(0)}%`
-              }
+              label={({ name, percent, cx, cy, midAngle, outerRadius }) => {
+                const RADIAN = Math.PI / 180;
+                const radius = outerRadius + 25;
+                const x = cx + radius * Math.cos(-midAngle * RADIAN);
+                const y = cy + radius * Math.sin(-midAngle * RADIAN);
+                return (
+                  <text
+                    x={x}
+                    y={y}
+                    fill="#E8E8E8"
+                    textAnchor={x > cx ? 'start' : 'end'}
+                    dominantBaseline="central"
+                    fontSize={12}
+                  >
+                    {`${name} ${(percent * 100).toFixed(0)}%`}
+                  </text>
+                );
+              }}
               labelLine={false}
             >
               {data.map((entry, index) => (
@@ -67,8 +82,11 @@ export function SrsBreakdown({ categoryTotals }) {
               contentStyle={{
                 borderRadius: '8px',
                 border: 'none',
-                boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+                boxShadow: '0 4px 12px rgba(0,0,0,0.4)',
+                background: '#3D3D3D',
+                color: '#E8E8E8',
               }}
+              labelStyle={{ color: '#9A9A9A' }}
             />
           </PieChart>
         </ResponsiveContainer>

@@ -21,6 +21,9 @@ class WaniKaniAPI {
       if (response.status === 401) {
         throw new Error('Invalid API token');
       }
+      if (response.status === 429) {
+        throw new Error('Rate limited by WaniKani API. Please wait a minute and try again.');
+      }
       throw new Error(`API error: ${response.status}`);
     }
 
@@ -35,6 +38,10 @@ class WaniKaniAPI {
       const response = await this.fetch(nextUrl);
       results.push(...response.data);
       nextUrl = response.pages?.next_url || null;
+      // Small delay between paginated requests to avoid rate limiting
+      if (nextUrl) {
+        await new Promise(resolve => setTimeout(resolve, 100));
+      }
     }
 
     return results;

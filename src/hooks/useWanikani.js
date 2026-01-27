@@ -36,13 +36,12 @@ export function useWanikani(apiToken) {
     try {
       const api = createAPI(apiToken);
 
-      const [user, levelProgressions, assignments, reviewStatistics, summary] = await Promise.all([
-        api.getUser(),
-        api.getLevelProgressions(),
-        api.getAssignments(),
-        api.getReviewStatistics(),
-        api.getSummary(),
-      ]);
+      // Fetch sequentially to avoid rate limiting
+      const user = await api.getUser();
+      const summary = await api.getSummary();
+      const levelProgressions = await api.getLevelProgressions();
+      const assignments = await api.getAssignments();
+      const reviewStatistics = await api.getReviewStatistics();
 
       // Process SRS breakdown
       const srsBreakdown = {};
@@ -112,15 +111,18 @@ export function useWanikani(apiToken) {
       }
 
       // Calculate current level progress
+      // For level progress, we care about kanji specifically (90% kanji at Guru = level up)
+      // But for a general progress bar, show all items passed vs total
       const currentLevelAssignments = assignments.filter(
-        a => a.data.level === user.level && a.data.srs_stage > 0
+        a => a.data.level === user.level
       );
       const currentLevelPassed = currentLevelAssignments.filter(
         a => a.data.passed_at !== null
       ).length;
-      const currentLevelTotal = assignments.filter(
-        a => a.data.level === user.level
+      const currentLevelStarted = currentLevelAssignments.filter(
+        a => a.data.started_at !== null
       ).length;
+      const currentLevelTotal = currentLevelAssignments.length;
 
       // Reviews due
       const reviewsDue = summary.reviews.reduce((sum, r) => sum + r.subject_ids.length, 0);
@@ -136,6 +138,7 @@ export function useWanikani(apiToken) {
         avgDaysPerLevel,
         currentLevelProgress: {
           passed: currentLevelPassed,
+          started: currentLevelStarted,
           total: currentLevelTotal,
         },
         reviewsDue,
