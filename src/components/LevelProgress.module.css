@@ -1,0 +1,44 @@
+.container {
+  background: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
+.label {
+  font-weight: 600;
+  color: #1a1a2e;
+}
+
+.count {
+  font-size: 0.85rem;
+  color: #666;
+}
+
+.barContainer {
+  height: 12px;
+  background: #e8e8f0;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.bar {
+  height: 100%;
+  background: linear-gradient(90deg, #aa00ff 0%, #00aaff 100%);
+  border-radius: 6px;
+  transition: width 0.5s ease-out;
+}
+
+.percentage {
+  margin: 0.5rem 0 0;
+  font-size: 0.85rem;
+  color: #888;
+  text-align: right;
+}
