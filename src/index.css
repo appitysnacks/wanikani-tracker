@@ -2,14 +2,19 @@
   box-sizing: border-box;
 }
 
+html {
+  background-color: #4A4A4A;
+}
+
 body {
   margin: 0;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  background: #4A4A4A;
+  background-color: #4A4A4A;
   color: #E8E8E8;
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  min-height: 100vh;
 }
 
 body::before {
@@ -26,4 +31,5 @@ body::before {
 #root {
   min-height: 100vh;
   padding-top: 4px;
+  background-color: #4A4A4A;
 }
