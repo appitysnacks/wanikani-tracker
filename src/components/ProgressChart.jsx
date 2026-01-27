@@ -1,69 +1,92 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import {
-  LineChart,
+  ComposedChart,
   Line,
+  Area,
   XAxis,
   YAxis,
-  CartesianGrid,
   Tooltip,
   ResponsiveContainer,
   ReferenceLine,
 } from 'recharts';
 import styles from './ProgressChart.module.css';
 
-function calculateProjection(levelTimeline, currentLevel) {
+function analyzeProgress(levelTimeline, currentLevel) {
   if (levelTimeline.length < 2) return null;
 
-  // Calculate time spent on each completed level
-  const levelDurations = [];
+  const levelData = [];
+  let totalDays = 0;
+  let fastestLevel = { level: 0, days: Infinity };
+  let slowestLevel = { level: 0, days: 0 };
+
   for (let i = 1; i < levelTimeline.length; i++) {
     const prev = levelTimeline[i - 1];
     const curr = levelTimeline[i];
     const daysSpent = (curr.startedAt - prev.startedAt) / (1000 * 60 * 60 * 24);
-    if (daysSpent > 0 && daysSpent < 365) { // Filter out unreasonable values
-      levelDurations.push(daysSpent);
+
+    if (daysSpent > 0 && daysSpent < 365) {
+      totalDays += daysSpent;
+      levelData.push({
+        level: prev.level,
+        days: daysSpent,
+        date: prev.startedAt.getTime(),
+      });
+
+      if (daysSpent < fastestLevel.days) {
+        fastestLevel = { level: prev.level, days: daysSpent };
+      }
+      if (daysSpent > slowestLevel.days) {
+        slowestLevel = { level: prev.level, days: daysSpent };
+      }
     }
   }
 
-  if (levelDurations.length === 0) return null;
+  if (levelData.length === 0) return null;
 
-  // Calculate average days per level
-  const avgDaysPerLevel = levelDurations.reduce((a, b) => a + b, 0) / levelDurations.length;
-
-  // Calculate median for comparison (more robust to outliers)
-  const sorted = [...levelDurations].sort((a, b) => a - b);
-  const medianDaysPerLevel = sorted[Math.floor(sorted.length / 2)];
-
+  const avgDaysPerLevel = totalDays / levelData.length;
   const levelsRemaining = 60 - currentLevel;
+  const startDate = levelTimeline[0].startedAt.getTime();
   const lastDataPoint = levelTimeline[levelTimeline.length - 1];
   const projectionStart = lastDataPoint.startedAt.getTime();
 
-  // Generate projection points using average
+  // Calculate estimated completion
+  const estimatedCompletionDate = new Date(
+    projectionStart + levelsRemaining * avgDaysPerLevel * 24 * 60 * 60 * 1000
+  );
+
+  // Generate projection points
   const projectionData = [];
   for (let i = 0; i <= levelsRemaining; i++) {
-    const projectedDate = projectionStart + (i * avgDaysPerLevel * 24 * 60 * 60 * 1000);
+    const projectedDate = projectionStart + i * avgDaysPerLevel * 24 * 60 * 60 * 1000;
     projectionData.push({
       level: currentLevel + i,
       date: projectedDate,
-      isProjection: true,
     });
   }
 
-  const estimatedCompletionDate = new Date(projectionStart + (levelsRemaining * avgDaysPerLevel * 24 * 60 * 60 * 1000));
-  const estimatedCompletionDateMedian = new Date(projectionStart + (levelsRemaining * medianDaysPerLevel * 24 * 60 * 60 * 1000));
+  // Calculate "ideal pace" line (straight line from start to level 60 at average pace)
+  const idealEndDate = startDate + 60 * avgDaysPerLevel * 24 * 60 * 60 * 1000;
 
   return {
-    projectionData,
+    levelData,
     avgDaysPerLevel,
-    medianDaysPerLevel,
-    estimatedCompletionDate,
-    estimatedCompletionDateMedian,
+    fastestLevel,
+    slowestLevel,
+    totalDays,
     levelsRemaining,
+    estimatedCompletionDate,
+    projectionData,
+    startDate,
+    idealEndDate,
   };
 }
 
 export function ProgressChart({ levelTimeline, currentLevel }) {
   const [showProjection, setShowProjection] = useState(true);
+
+  const analysis = useMemo(() => {
+    return analyzeProgress(levelTimeline, currentLevel || levelTimeline?.[levelTimeline.length - 1]?.level || 1);
+  }, [levelTimeline, currentLevel]);
 
   if (!levelTimeline || levelTimeline.length === 0) {
     return (
@@ -74,39 +97,47 @@ export function ProgressChart({ levelTimeline, currentLevel }) {
     );
   }
 
-  const actualData = levelTimeline.map((lp) => ({
-    level: lp.level,
-    date: lp.startedAt.getTime(),
-  }));
+  // Build chart data with days per level for coloring
+  const chartData = levelTimeline.map((lp, i) => {
+    const nextLevel = levelTimeline[i + 1];
+    const daysToNext = nextLevel
+      ? (nextLevel.startedAt - lp.startedAt) / (1000 * 60 * 60 * 24)
+      : null;
 
-  const projection = calculateProjection(levelTimeline, currentLevel || levelTimeline[levelTimeline.length - 1].level);
+    return {
+      date: lp.startedAt.getTime(),
+      level: lp.level,
+      daysToNext: daysToNext,
+    };
+  });
 
-  // Combine actual and projection data for the chart
-  let combinedData = actualData.map(d => ({ ...d, actualLevel: d.level }));
-
-  if (projection && showProjection) {
-    // Add projection data points
-    const projectionPoints = projection.projectionData.map(d => ({
+  // Add projection data
+  let projectionData = [];
+  if (analysis && showProjection) {
+    projectionData = analysis.projectionData.map(d => ({
       date: d.date,
       projectedLevel: d.level,
     }));
+  }
 
-    // Merge datasets by date
-    const allDates = new Set([
-      ...combinedData.map(d => d.date),
-      ...projectionPoints.map(d => d.date),
-    ]);
+  // Merge actual and projection
+  const allDates = new Set([
+    ...chartData.map(d => d.date),
+    ...projectionData.map(d => d.date),
+  ]);
 
-    combinedData = Array.from(allDates).sort((a, b) => a - b).map(date => {
-      const actual = combinedData.find(d => d.date === date);
-      const projected = projectionPoints.find(d => d.date === date);
+  const combinedData = Array.from(allDates)
+    .sort((a, b) => a - b)
+    .map(date => {
+      const actual = chartData.find(d => d.date === date);
+      const projected = projectionData.find(d => d.date === date);
       return {
         date,
-        actualLevel: actual?.actualLevel,
+        level: actual?.level,
+        daysToNext: actual?.daysToNext,
         projectedLevel: projected?.projectedLevel,
       };
     });
-  }
 
   const formatDate = (timestamp) => {
     return new Date(timestamp).toLocaleDateString('en-US', {
@@ -116,142 +147,194 @@ export function ProgressChart({ levelTimeline, currentLevel }) {
     });
   };
 
-  // Generate quarterly ticks for X-axis
-  const generateQuarterlyTicks = () => {
-    const allDates = combinedData.map(d => d.date);
-    const minDate = Math.min(...allDates);
-    const maxDate = Math.max(...allDates);
+  const formatMonth = (timestamp) => {
+    const date = new Date(timestamp);
+    const month = date.toLocaleDateString('en-US', { month: 'short' });
+    const year = date.getFullYear().toString().slice(-2);
+    return `${month} '${year}`;
+  };
+
+  // Generate ticks every 6 months
+  const generateTicks = () => {
+    const dates = combinedData.map(d => d.date);
+    const minDate = Math.min(...dates);
+    const maxDate = Math.max(...dates);
 
     const ticks = [];
-    const startDate = new Date(minDate);
-    const endDate = new Date(maxDate);
+    const start = new Date(minDate);
+    start.setDate(1);
+    start.setMonth(Math.floor(start.getMonth() / 6) * 6);
 
-    // Start from the first quarter boundary before or at minDate
-    const quarterMonths = [0, 3, 6, 9]; // Jan, Apr, Jul, Oct
-    let currentYear = startDate.getFullYear();
-    let currentQuarterIdx = quarterMonths.findIndex(m => m >= startDate.getMonth());
-    if (currentQuarterIdx === -1) {
-      currentQuarterIdx = 0;
-      currentYear++;
-    }
-
-    while (true) {
-      const tickDate = new Date(currentYear, quarterMonths[currentQuarterIdx], 1);
-      const tickTime = tickDate.getTime();
-
-      if (tickTime > maxDate) break;
-      if (tickTime >= minDate) {
-        ticks.push(tickTime);
+    while (start.getTime() <= maxDate) {
+      if (start.getTime() >= minDate) {
+        ticks.push(start.getTime());
       }
-
-      currentQuarterIdx++;
-      if (currentQuarterIdx >= 4) {
-        currentQuarterIdx = 0;
-        currentYear++;
-      }
+      start.setMonth(start.getMonth() + 6);
     }
 
     return ticks;
   };
 
-  const formatQuarter = (timestamp) => {
-    const date = new Date(timestamp);
-    const months = ['Jan', 'Apr', 'Jul', 'Oct'];
-    const monthIdx = Math.floor(date.getMonth() / 3);
-    const year = date.getFullYear().toString().slice(-2);
-    return `${months[monthIdx]} '${year}`;
-  };
-
-  // Generate Y-axis ticks for levels 1-60 (every 5 levels for readability)
-  const levelTicks = [1, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60];
-
-  // Today's date for vertical reference line
   const today = new Date().getTime();
+  const levelTicks = [1, 10, 20, 30, 40, 50, 60];
+
+  // Custom tooltip
+  const CustomTooltip = ({ active, payload, label }) => {
+    if (!active || !payload || !payload.length) return null;
+
+    const data = payload[0]?.payload;
+    const isProjection = data?.projectedLevel && !data?.level;
+
+    return (
+      <div className={styles.tooltip}>
+        <div className={styles.tooltipDate}>{formatDate(label)}</div>
+        {data?.level && (
+          <>
+            <div className={styles.tooltipLevel}>Level {data.level}</div>
+            {data.daysToNext && (
+              <div className={styles.tooltipDays}>
+                {data.daysToNext.toFixed(1)} days to next level
+              </div>
+            )}
+          </>
+        )}
+        {isProjection && (
+          <div className={styles.tooltipProjection}>
+            Projected: Level {data.projectedLevel}
+          </div>
+        )}
+      </div>
+    );
+  };
 
   return (
     <div className={styles.container}>
       <div className={styles.header}>
-        <h3 className={styles.title}>Level Progression</h3>
-        {projection && (
+        <div>
+          <h3 className={styles.title}>Level Progression</h3>
+          {analysis && (
+            <p className={styles.subtitle}>
+              {analysis.totalDays.toFixed(0)} days total · {analysis.avgDaysPerLevel.toFixed(1)} days avg per level
+            </p>
+          )}
+        </div>
+        {analysis && (
           <label className={styles.toggle}>
             <input
               type="checkbox"
               checked={showProjection}
               onChange={(e) => setShowProjection(e.target.checked)}
             />
-            Show projection
+            Projection
           </label>
         )}
       </div>
 
       <div className={styles.chartWrapper}>
-        <ResponsiveContainer width="100%" height={400}>
-          <LineChart data={combinedData} margin={{ top: 10, right: 30, left: 0, bottom: 5 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#5A5A5A" />
+        <ResponsiveContainer width="100%" height={350}>
+          <ComposedChart data={combinedData} margin={{ top: 20, right: 20, left: 0, bottom: 20 }}>
             <XAxis
               dataKey="date"
               type="number"
               domain={['dataMin', 'dataMax']}
-              ticks={generateQuarterlyTicks()}
-              tickFormatter={formatQuarter}
-              stroke="#8A8A8A"
+              ticks={generateTicks()}
+              tickFormatter={formatMonth}
+              stroke="#666"
               fontSize={11}
-              angle={-45}
-              textAnchor="end"
-              height={50}
-              tick={{ fill: '#9A9A9A' }}
+              tickLine={false}
+              axisLine={{ stroke: '#555' }}
+              tick={{ fill: '#888' }}
             />
             <YAxis
               domain={[1, 60]}
               ticks={levelTicks}
-              stroke="#8A8A8A"
+              stroke="#666"
               fontSize={11}
-              width={40}
-              tick={{ fill: '#9A9A9A' }}
+              width={35}
+              tickLine={false}
+              axisLine={{ stroke: '#555' }}
+              tick={{ fill: '#888' }}
             />
-            <Tooltip
-              labelFormatter={formatDate}
-              formatter={(value, name) => {
-                if (name === 'actualLevel') return [`Level ${value}`, 'Actual'];
-                if (name === 'projectedLevel') return [`Level ${value}`, 'Projected'];
-                return [value, name];
-              }}
-              contentStyle={{
-                borderRadius: '8px',
-                border: 'none',
-                boxShadow: '0 4px 12px rgba(0,0,0,0.4)',
-                background: '#3D3D3D',
-                color: '#E8E8E8',
-              }}
-              labelStyle={{ color: '#9A9A9A' }}
+            <Tooltip content={<CustomTooltip />} />
+
+            {/* Level 60 goal line */}
+            <ReferenceLine y={60} stroke="#444" strokeWidth={1} />
+
+            {/* Today marker */}
+            <ReferenceLine
+              x={today}
+              stroke="#FF9500"
+              strokeWidth={1}
+              strokeDasharray="3 3"
             />
-            <ReferenceLine y={60} stroke="#00D68F" strokeDasharray="5 5" label={{ value: 'Lvl 60', position: 'insideRight', fill: '#00D68F', fontSize: 11 }} />
-            <ReferenceLine x={today} stroke="#FF9500" strokeWidth={1} label={{ value: 'Today', position: 'insideTopRight', fill: '#FF9500', fontSize: 10, dy: 5 }} />
-            <Line
-              type="stepAfter"
-              dataKey="actualLevel"
-              stroke="#BB66FF"
-              strokeWidth={2}
-              dot={{ fill: '#BB66FF', strokeWidth: 0, r: 4 }}
-              activeDot={{ r: 6, fill: '#BB66FF' }}
-              connectNulls={false}
-            />
-            {showProjection && projection && (
+
+            {/* Projection area fill */}
+            {showProjection && analysis && (
+              <Area
+                type="linear"
+                dataKey="projectedLevel"
+                stroke="none"
+                fill="#00AAFF"
+                fillOpacity={0.1}
+                connectNulls={false}
+              />
+            )}
+
+            {/* Projection line */}
+            {showProjection && analysis && (
               <Line
                 type="linear"
                 dataKey="projectedLevel"
                 stroke="#00AAFF"
-                strokeWidth={2}
-                strokeDasharray="5 5"
+                strokeWidth={1.5}
+                strokeDasharray="4 4"
                 dot={false}
-                activeDot={{ r: 6, fill: '#00AAFF' }}
                 connectNulls={false}
               />
             )}
-          </LineChart>
+
+            {/* Actual progress line */}
+            <Line
+              type="stepAfter"
+              dataKey="level"
+              stroke="#00AAFF"
+              strokeWidth={2}
+              dot={{ fill: '#00AAFF', strokeWidth: 0, r: 3 }}
+              activeDot={{ r: 5, fill: '#5AC8FA' }}
+              connectNulls={false}
+            />
+          </ComposedChart>
         </ResponsiveContainer>
       </div>
 
+      {/* Key metrics */}
+      {analysis && (
+        <div className={styles.metrics}>
+          <div className={styles.metric}>
+            <span className={styles.metricLabel}>Fastest</span>
+            <span className={styles.metricValue}>
+              Lvl {analysis.fastestLevel.level}
+              <span className={styles.metricDetail}>{analysis.fastestLevel.days.toFixed(1)}d</span>
+            </span>
+          </div>
+          <div className={styles.metric}>
+            <span className={styles.metricLabel}>Slowest</span>
+            <span className={styles.metricValue}>
+              Lvl {analysis.slowestLevel.level}
+              <span className={styles.metricDetail}>{analysis.slowestLevel.days.toFixed(1)}d</span>
+            </span>
+          </div>
+          <div className={styles.metric}>
+            <span className={styles.metricLabel}>Est. Completion</span>
+            <span className={styles.metricValue}>
+              {analysis.estimatedCompletionDate.toLocaleDateString('en-US', {
+                month: 'short',
+                year: 'numeric',
+              })}
+            </span>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

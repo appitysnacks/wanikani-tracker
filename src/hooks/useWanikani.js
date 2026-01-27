@@ -116,17 +116,50 @@ export function useWanikani(apiToken) {
       const currentLevelAssignments = assignments.filter(
         a => a.data.level === user.level
       );
+      // Items that have reached Guru (passed)
       const currentLevelPassed = currentLevelAssignments.filter(
         a => a.data.passed_at !== null
       ).length;
+      // Items that have been started (have an SRS stage, meaning lessons done)
       const currentLevelStarted = currentLevelAssignments.filter(
-        a => a.data.started_at !== null
+        a => a.data.srs_stage > 0 || a.data.unlocked_at !== null
       ).length;
       const currentLevelTotal = currentLevelAssignments.length;
 
       // Reviews due
       const reviewsDue = summary.reviews.reduce((sum, r) => sum + r.subject_ids.length, 0);
       const lessonsDue = summary.lessons.reduce((sum, l) => sum + l.subject_ids.length, 0);
+
+      // Fetch recent mistakes
+      const recentReviews = await api.getRecentReviews(100);
+      const reviewsWithMistakes = recentReviews
+        .filter(r => r.data.incorrect_meaning_answers > 0 || r.data.incorrect_reading_answers > 0)
+        .sort((a, b) => new Date(b.data.created_at) - new Date(a.data.created_at))
+        .slice(0, 10);
+
+      // Get subject details for mistakes
+      let recentMistakes = [];
+      if (reviewsWithMistakes.length > 0) {
+        const subjectIds = [...new Set(reviewsWithMistakes.map(r => r.data.subject_id))];
+        const subjects = await api.getSubjects(subjectIds);
+        // Subject type (object) is on the outer object, data contains the details
+        const subjectMap = new Map(subjects.map(s => [s.id, { ...s.data, type: s.object }]));
+
+        recentMistakes = reviewsWithMistakes.map(r => {
+          const subject = subjectMap.get(r.data.subject_id) || {};
+          return {
+            id: r.id,
+            subjectId: r.data.subject_id,
+            characters: subject.characters || subject.slug || '?',
+            meanings: subject.meanings?.filter(m => m.primary).map(m => m.meaning) || [],
+            readings: subject.readings?.filter(rd => rd.primary).map(rd => rd.reading) || [],
+            type: subject.type || 'unknown',
+            incorrectMeaning: r.data.incorrect_meaning_answers,
+            incorrectReading: r.data.incorrect_reading_answers,
+            reviewedAt: new Date(r.data.created_at),
+          };
+        });
+      }
 
       setData({
         user,
@@ -144,6 +177,7 @@ export function useWanikani(apiToken) {
         reviewsDue,
         lessonsDue,
         totalItems: assignments.filter(a => a.data.srs_stage > 0).length,
+        recentMistakes,
       });
     } catch (err) {
       setError(err.message);

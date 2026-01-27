@@ -7,7 +7,7 @@ export function LevelProgress({ level, passed, started, total }) {
   return (
     <div className={styles.container}>
       <div className={styles.header}>
-        <span className={styles.label}>Level {level} Progress</span>
+        <span className={styles.label}>Level {level} progress</span>
         <span className={styles.count}>
           {started} / {total} started · {passed} passed
         </span>

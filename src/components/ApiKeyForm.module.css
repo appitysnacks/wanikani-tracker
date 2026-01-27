@@ -7,10 +7,9 @@
 }
 
 .card {
-  background: #4A4A4A;
+  background: #606060;
   border-radius: 12px;
   padding: 2.5rem;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
   max-width: 400px;
   width: 100%;
 }

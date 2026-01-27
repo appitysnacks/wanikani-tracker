@@ -68,6 +68,19 @@ class WaniKaniAPI {
     const response = await this.fetch('/summary');
     return response.data;
   }
+
+  async getRecentReviews(limit = 100) {
+    // Fetch recent reviews, sorted by most recent
+    const response = await this.fetch(`/reviews?per_page=${limit}`);
+    return response.data;
+  }
+
+  async getSubjects(ids) {
+    if (ids.length === 0) return [];
+    const idsParam = ids.join(',');
+    const response = await this.fetch(`/subjects?ids=${idsParam}`);
+    return response.data;
+  }
 }
 
 export function createAPI(token) {

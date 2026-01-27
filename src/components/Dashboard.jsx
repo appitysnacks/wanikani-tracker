@@ -2,6 +2,7 @@ import { useWanikani } from '../hooks/useWanikani';
 import { StatsCard } from './StatsCard';
 import { LevelProgress } from './LevelProgress';
 import { ProgressChart } from './ProgressChart';
+import { RecentMistakes } from './RecentMistakes';
 import styles from './Dashboard.module.css';
 
 export function Dashboard({ apiToken, onLogout }) {
@@ -30,14 +31,14 @@ export function Dashboard({ apiToken, onLogout }) {
 
   if (!data) return null;
 
-  const { user, accuracy, avgDaysPerLevel, currentLevelProgress, levelTimeline } = data;
+  const { user, accuracy, avgDaysPerLevel, currentLevelProgress, levelTimeline, recentMistakes } = data;
 
   return (
     <div className={styles.container}>
       <header className={styles.header}>
-        <div>
-          <h1 className={styles.title}>WaniKani Progress</h1>
-          <p className={styles.username}>Welcome, {user.username}</p>
+        <div className={styles.branding}>
+          <img src="/wanikani-logo.png" alt="WaniKani" className={styles.logo} />
+          <h1 className={styles.title}>Tara's Progress Dashboard</h1>
         </div>
         <div className={styles.headerActions}>
           <button onClick={refresh} className={styles.refreshButton} disabled={loading}>
@@ -79,6 +80,7 @@ export function Dashboard({ apiToken, onLogout }) {
         total={currentLevelProgress.total}
       />
 
+      <RecentMistakes mistakes={recentMistakes} />
 
       <footer className={styles.footer}>
         <p>

@@ -66,16 +66,25 @@
   margin-bottom: 2rem;
 }
 
-.title {
-  margin: 0;
-  font-size: 1.75rem;
-  color: #E8E8E8;
+.branding {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.5rem;
 }
 
-.username {
-  margin: 0.25rem 0 0;
-  color: #9A9A9A;
-  font-size: 0.9rem;
+.logo {
+  height: 40px;
+  max-width: 180px;
+  object-fit: contain;
+  object-position: left;
+}
+
+.title {
+  margin: 0;
+  font-size: 1.25rem;
+  color: #E8E8E8;
+  font-weight: 500;
 }
 
 .headerActions {

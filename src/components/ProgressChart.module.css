@@ -1,37 +1,45 @@
 .container {
-  background: #4A4A4A;
+  background: #606060;
   border-radius: 12px;
   padding: 1.5rem;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
   margin-bottom: 1.5rem;
 }
 
 .header {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
   margin-bottom: 1rem;
 }
 
 .title {
   margin: 0;
-  font-size: 1rem;
-  font-weight: 600;
+  font-size: 0.75rem;
+  font-weight: 700;
   color: #E8E8E8;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.subtitle {
+  margin: 0.25rem 0 0;
+  font-size: 0.8rem;
+  color: #888;
+  font-weight: 400;
 }
 
 .toggle {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  font-size: 0.85rem;
-  color: #9A9A9A;
+  font-size: 0.8rem;
+  color: #888;
   cursor: pointer;
 }
 
 .toggle input {
   cursor: pointer;
-  accent-color: #00aaff;
+  accent-color: #00AAFF;
 }
 
 .chartWrapper {
@@ -39,15 +47,90 @@
 }
 
 .empty {
-  color: #8A8A8A;
+  color: #888;
   text-align: center;
   padding: 2rem;
+}
+
+/* Custom tooltip */
+.tooltip {
+  background: #2A2A2A;
+  border: 1px solid #444;
+  border-radius: 6px;
+  padding: 0.75rem 1rem;
+  font-size: 0.85rem;
+}
+
+.tooltipDate {
+  color: #888;
+  font-size: 0.75rem;
+  margin-bottom: 0.25rem;
+}
+
+.tooltipLevel {
+  color: #E8E8E8;
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+.tooltipDays {
+  color: #00AAFF;
+  font-size: 0.8rem;
+  margin-top: 0.25rem;
+}
+
+.tooltipProjection {
+  color: #00AAFF;
+  font-style: italic;
+}
+
+/* Metrics row */
+.metrics {
+  display: flex;
+  justify-content: flex-start;
+  gap: 2rem;
+  margin-top: 1.25rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid #555;
+}
+
+.metric {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.metricLabel {
+  font-size: 0.7rem;
+  color: #666;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 500;
+}
+
+.metricValue {
+  font-size: 0.95rem;
+  color: #E8E8E8;
+  font-weight: 500;
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+}
+
+.metricDetail {
+  font-size: 0.8rem;
+  color: #888;
+  font-weight: 400;
 }
 
 @media (max-width: 600px) {
   .header {
     flex-direction: column;
-    align-items: flex-start;
     gap: 0.75rem;
+  }
+
+  .metrics {
+    flex-wrap: wrap;
+    gap: 1rem 2rem;
   }
 }
