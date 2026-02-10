@@ -1,6 +1,9 @@
 import { useWanikani } from '../hooks/useWanikani';
 import { StatsCard } from './StatsCard';
 import { ProgressChart } from './ProgressChart';
+import { LevelProgress } from './LevelProgress';
+import { SrsBreakdown } from './SrsBreakdown';
+import { RecentMistakes } from './RecentMistakes';
 import { MotivationalQuote } from './MotivationalQuote';
 import styles from './Dashboard.module.css';
 
@@ -30,7 +33,7 @@ export function Dashboard({ apiToken, onLogout }) {
 
   if (!data) return null;
 
-  const { user, accuracy, avgDaysPerLevel, fastestLevel, slowestLevel, estimatedCompletion, levelTimeline } = data;
+  const { user, accuracy, avgDaysPerLevel, fastestLevel, slowestLevel, estimatedCompletion, levelTimeline, categoryTotals, currentLevelProgress, recentMistakes } = data;
 
   return (
     <div className={styles.container}>
@@ -81,6 +84,18 @@ export function Dashboard({ apiToken, onLogout }) {
       </div>
 
       <ProgressChart levelTimeline={levelTimeline} currentLevel={user.level} />
+
+      <LevelProgress
+        level={user.level}
+        passed={currentLevelProgress.passed}
+        started={currentLevelProgress.started}
+        total={currentLevelProgress.total}
+      />
+
+      <div className={styles.chartsGrid}>
+        <SrsBreakdown categoryTotals={categoryTotals} />
+        <RecentMistakes mistakes={recentMistakes} />
+      </div>
 
       <MotivationalQuote />
 
