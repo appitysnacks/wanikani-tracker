@@ -43,31 +43,7 @@ function MistakeList({ items, countKey }) {
 
 export function TopMistakes({ meanings, readings, radicals }) {
   return (
-    <div className={styles.wrapper}>
-      <div className={styles.legend}>
-        <div className={styles.legendSection}>
-          <span className={styles.legendLabel}>Subject types</span>
-          <span className={styles.legendItem}>
-            <span className={styles.legendDot} style={{ background: '#00AAFF' }} />
-            Radical
-          </span>
-          <span className={styles.legendItem}>
-            <span className={styles.legendDot} style={{ background: '#FF0080' }} />
-            Kanji
-          </span>
-          <span className={styles.legendItem}>
-            <span className={styles.legendDot} style={{ background: '#9B59B6' }} />
-            Vocabulary
-          </span>
-        </div>
-        <div className={styles.legendSection}>
-          <span className={styles.legendLabel}>Columns</span>
-          <span className={styles.legendDesc}><strong>Meanings</strong> — English meaning errors</span>
-          <span className={styles.legendDesc}><strong>Readings</strong> — onyomi/kunyomi errors</span>
-          <span className={styles.legendDesc}><strong>Radicals</strong> — radical name errors</span>
-        </div>
-      </div>
-      <div className={styles.columns}>
+    <div className={styles.columns}>
       <div className={styles.container}>
         <h3 className={styles.title}>Most Missed Meanings</h3>
         <MistakeList items={meanings} countKey="incorrectMeaning" />
@@ -79,7 +55,6 @@ export function TopMistakes({ meanings, readings, radicals }) {
       <div className={styles.container}>
         <h3 className={styles.title}>Most Missed Radicals</h3>
         <MistakeList items={radicals} countKey="incorrectMeaning" />
-      </div>
       </div>
     </div>
   );
