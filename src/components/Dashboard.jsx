@@ -5,10 +5,11 @@ import { LevelProgress } from './LevelProgress';
 import { SrsBreakdown } from './SrsBreakdown';
 import { RecentMistakes } from './RecentMistakes';
 import { MotivationalQuote } from './MotivationalQuote';
+import { TopMistakes } from './TopMistakes';
 import styles from './Dashboard.module.css';
 
 export function Dashboard({ apiToken, onLogout }) {
-  const { data, loading, error, refresh } = useWanikani(apiToken);
+  const { data, loading, error, refresh, lastFetched } = useWanikani(apiToken);
 
   if (loading && !data) {
     return (
@@ -43,6 +44,11 @@ export function Dashboard({ apiToken, onLogout }) {
           <h1 className={styles.title}>My Progress Dashboard</h1>
         </div>
         <div className={styles.headerActions}>
+          {lastFetched && (
+            <span className={styles.lastFetched}>
+              Updated {lastFetched.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+            </span>
+          )}
           <button onClick={refresh} className={styles.refreshButton} disabled={loading}>
             {loading ? 'Refreshing...' : 'Refresh'}
           </button>
@@ -82,6 +88,8 @@ export function Dashboard({ apiToken, onLogout }) {
           color="#00D68F"
         />
       </div>
+
+      <TopMistakes meanings={data.topMissedMeanings} readings={data.topMissedReadings} radicals={data.topMissedRadicals} />
 
       <ProgressChart levelTimeline={levelTimeline} currentLevel={user.level} />
 

@@ -22,13 +22,58 @@ const SRS_CATEGORIES = {
   burned: [9],
 };
 
+const CACHE_KEY = 'wanikani_cache';
+const CACHE_MAX_AGE = 30 * 60 * 1000; // 30 minutes
+
+function loadCache() {
+  try {
+    const raw = localStorage.getItem(CACHE_KEY);
+    if (!raw) return null;
+    const cached = JSON.parse(raw);
+    if (Date.now() - cached.timestamp > CACHE_MAX_AGE) return null;
+    return cached;
+  } catch {
+    return null;
+  }
+}
+
+function saveCache(data) {
+  try {
+    localStorage.setItem(CACHE_KEY, JSON.stringify({
+      timestamp: Date.now(),
+      data,
+    }));
+  } catch {
+    // localStorage full or unavailable — ignore
+  }
+}
+
 export function useWanikani(apiToken) {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [lastFetched, setLastFetched] = useState(null);
 
-  const fetchData = useCallback(async () => {
+  // Load cache on mount
+  useEffect(() => {
+    const cached = loadCache();
+    if (cached) {
+      setData(cached.data);
+      setLastFetched(new Date(cached.timestamp));
+    }
+  }, []);
+
+  const fetchData = useCallback(async (bypassCache = false) => {
     if (!apiToken) return;
+
+    if (!bypassCache) {
+      const cached = loadCache();
+      if (cached) {
+        setData(cached.data);
+        setLastFetched(new Date(cached.timestamp));
+        return;
+      }
+    }
 
     setLoading(true);
     setError(null);
@@ -154,6 +199,68 @@ export function useWanikani(apiToken) {
       const reviewsDue = summary.reviews.reduce((sum, r) => sum + r.subject_ids.length, 0);
       const lessonsDue = summary.lessons.reduce((sum, l) => sum + l.subject_ids.length, 0);
 
+      // Top 10 most missed meanings and readings (all time)
+      const kanjiAndVocab = reviewStatistics
+        .filter(s => s.data.subject_type === 'kanji' || s.data.subject_type === 'vocabulary')
+        .map(s => ({
+          subjectId: s.data.subject_id,
+          type: s.data.subject_type,
+          incorrectMeaning: s.data.meaning_incorrect,
+          incorrectReading: s.data.reading_incorrect,
+        }));
+
+      const topMissedMeanings = [...kanjiAndVocab]
+        .filter(s => s.incorrectMeaning > 0)
+        .sort((a, b) => b.incorrectMeaning - a.incorrectMeaning)
+        .slice(0, 10);
+
+      const topMissedReadings = [...kanjiAndVocab]
+        .filter(s => s.incorrectReading > 0)
+        .sort((a, b) => b.incorrectReading - a.incorrectReading)
+        .slice(0, 10);
+
+      // Top 10 most missed radicals (meanings only — radicals have no readings)
+      const topMissedRadicals = reviewStatistics
+        .filter(s => s.data.subject_type === 'radical')
+        .map(s => ({
+          subjectId: s.data.subject_id,
+          type: s.data.subject_type,
+          incorrectMeaning: s.data.meaning_incorrect,
+        }))
+        .filter(s => s.incorrectMeaning > 0)
+        .sort((a, b) => b.incorrectMeaning - a.incorrectMeaning)
+        .slice(0, 10);
+
+      // Fetch subject details for all lists (deduplicated)
+      const allTopSubjectIds = [...new Set([
+        ...topMissedMeanings.map(s => s.subjectId),
+        ...topMissedReadings.map(s => s.subjectId),
+        ...topMissedRadicals.map(s => s.subjectId),
+      ])];
+
+      let topMissedMeaningsList = [];
+      let topMissedReadingsList = [];
+      let topMissedRadicalsList = [];
+      if (allTopSubjectIds.length > 0) {
+        const topSubjects = await api.getSubjects(allTopSubjectIds);
+        const topSubjectMap = new Map(topSubjects.map(s => [s.id, { ...s.data, type: s.object }]));
+
+        const enrich = (s) => {
+          const subject = topSubjectMap.get(s.subjectId) || {};
+          return {
+            ...s,
+            characters: subject.characters || subject.slug || '?',
+            meanings: subject.meanings?.filter(m => m.primary).map(m => m.meaning) || [],
+            readings: subject.readings?.filter(rd => rd.primary).map(rd => rd.reading) || [],
+            type: subject.type || s.type,
+          };
+        };
+
+        topMissedMeaningsList = topMissedMeanings.map(enrich);
+        topMissedReadingsList = topMissedReadings.map(enrich);
+        topMissedRadicalsList = topMissedRadicals.map(enrich);
+      }
+
       // Fetch recent mistakes
       const recentReviews = await api.getRecentReviews(100);
       const reviewsWithMistakes = recentReviews
@@ -185,7 +292,7 @@ export function useWanikani(apiToken) {
         });
       }
 
-      setData({
+      const result = {
         user,
         levelTimeline,
         srsBreakdown,
@@ -205,7 +312,14 @@ export function useWanikani(apiToken) {
         lessonsDue,
         totalItems: assignments.filter(a => a.data.srs_stage > 0).length,
         recentMistakes,
-      });
+        topMissedMeanings: topMissedMeaningsList,
+        topMissedReadings: topMissedReadingsList,
+        topMissedRadicals: topMissedRadicalsList,
+      };
+
+      saveCache(result);
+      setData(result);
+      setLastFetched(new Date());
     } catch (err) {
       setError(err.message);
     } finally {
@@ -217,5 +331,7 @@ export function useWanikani(apiToken) {
     fetchData();
   }, [fetchData]);
 
-  return { data, loading, error, refresh: fetchData };
+  const refresh = useCallback(() => fetchData(true), [fetchData]);
+
+  return { data, loading, error, refresh, lastFetched };
 }

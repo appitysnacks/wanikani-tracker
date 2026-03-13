@@ -1,0 +1,151 @@
+.wrapper {
+  margin-top: 1.5rem;
+}
+
+.legend {
+  display: flex;
+  gap: 2rem;
+  padding: 1rem 1.5rem;
+  background: #606060;
+  border-radius: 12px;
+  margin-bottom: 1rem;
+}
+
+.legendSection {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.legendLabel {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #8A8A8A;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.legendItem {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.8rem;
+  color: #E8E8E8;
+}
+
+.legendDot {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  display: inline-block;
+}
+
+.legendDesc {
+  font-size: 0.8rem;
+  color: #C8C8C8;
+}
+
+.columns {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 1.5rem;
+}
+
+.container {
+  background: #606060;
+  border-radius: 12px;
+  padding: 1.5rem;
+}
+
+.title {
+  margin: 0 0 1rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #E8E8E8;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.empty {
+  color: #8A8A8A;
+  text-align: center;
+  padding: 1rem;
+  margin: 0;
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  background: #3D3D3D;
+  border-radius: 8px;
+}
+
+.rank {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #8A8A8A;
+  min-width: 1.5rem;
+  text-align: center;
+}
+
+.character {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: white;
+  padding: 0.5rem 0.75rem;
+  border-radius: 6px;
+  min-width: 2.5rem;
+  text-align: center;
+}
+
+.details {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-width: 0;
+}
+
+.meaning {
+  color: #E8E8E8;
+  font-size: 0.9rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.reading {
+  color: #9A9A9A;
+  font-size: 0.8rem;
+}
+
+.count {
+  font-size: 0.85rem;
+  font-weight: 700;
+  padding: 0.25rem 0.5rem;
+  background: #FF6B6B;
+  color: white;
+  border-radius: 4px;
+  min-width: 1.5rem;
+  text-align: center;
+}
+
+@media (max-width: 768px) {
+  .legend {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .columns {
+    grid-template-columns: 1fr;
+  }
+}
